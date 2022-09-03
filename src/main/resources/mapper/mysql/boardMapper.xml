@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="sample">
+
+	<select id="selectBoardList" parameterType="Map" resultType="BoardDTO">
+      SELECT A.RN, A.BOARD_IDX, A.BOARD_WRITER, A.BOARD_TITLE, A.BOARD_CONTENTS, A.BOARD_VIEW_COUNT, A.FILE_IDX, A.BOARD_WRITE_DATE, A.BOARD_PUBLIC_FL, A.BOARD_DEL_YN
+        FROM (SELECT @ROWNUM := @ROWNUM + 1 AS RN, BOARD_IDX, BOARD_WRITER, BOARD_TITLE, BOARD_CONTENTS, BOARD_VIEW_COUNT, FILE_IDX, BOARD_WRITE_DATE, BOARD_PUBLIC_FL, BOARD_DEL_YN
+              FROM (SELECT * 
+                    FROM SAMPLE_BOARD_TB
+                    JOIN (SELECT @ROWNUM := 0) R
+                   ORDER BY BOARD_IDX DESC) AS M
+            ) A
+      WHERE A.RN BETWEEN #{beginRecord} AND #{endRecord}
+
+
+	</select>
+
+	<!-- paging 처리용 -->
+	<select id="selectBoardCount" parameterType="BoardDTO" resultType="int">
+		SELECT count(1) FROM SAMPLE_BOARD_TB
+		<where>
+			<if test="boardIdx       !=null and boardIdx       !=''"><![CDATA[ AND BOARD_IDX         = #{boardIdx}       ]]></if>
+			<if test="boardWriter    !=null and boardWriter    !=''"><![CDATA[ AND BOARD_WRITER      = #{boardWriter}    ]]></if>
+			<if test="boardTitle     !=null and boardTitle     !=''"><![CDATA[ AND BOARD_TITLE       = #{boardTitle}     ]]></if>
+			<if test="boardContents  !=null and boardContents  !=''"><![CDATA[ AND BOARD_CONTENTS    = #{boardContents}  ]]></if>
+			<if test="boardViewCount !=null and boardViewCount !=''"><![CDATA[ AND BOARD_VIEW_COUNT  = #{boardViewCount} ]]></if>
+			<if test="fileIdx        !=null and fileIdx        !=''"><![CDATA[ AND FILE_IDX          = #{fileIdx}        ]]></if>
+		</where>
+	</select>
+	
+	<select id="selectTodayBoardCount" resultType="int">
+		SELECT COUNT(*) 
+		  FROM SAMPLE_BOARD_TB
+		 WHERE DATE(BOARD_WRITE_DATE) = DATE(NOW());
+	</select>
+
+	<!-- INSERT SAMPLE_BOARD_TB -->
+	<insert id="insertBoard" parameterType="BoardDTO">
+		INSERT INTO SAMPLE_BOARD_TB (
+			<trim prefixOverrides=",">
+			<if test="boardIdx       !=null and boardIdx       !=''"> , BOARD_IDX        </if>
+			<if test="boardWriter    !=null and boardWriter    !=''"> , BOARD_WRITER     </if>
+			<if test="boardTitle     !=null and boardTitle     !=''"> , BOARD_TITLE      </if>
+			<if test="boardContents  !=null and boardContents  !=''"> , BOARD_CONTENTS   </if>
+			<if test="boardViewCount !=null and boardViewCount !=''"> , BOARD_VIEW_COUNT </if>
+			<if test="fileIdx        !=null and fileIdx        !=''"> , FILE_IDX         </if>
+			, BOARD_PUBLIC_FL
+			, BOARD_WRITE_DATE
+			</trim>
+		) VALUES(
+			<trim prefixOverrides=",">
+			<if test="boardIdx       !=null and boardIdx       !=''"> , #{boardIdx}       </if>
+			<if test="boardWriter    !=null and boardWriter    !=''"> , #{boardWriter}    </if>
+			<if test="boardTitle     !=null and boardTitle     !=''"> , #{boardTitle}     </if>
+			<if test="boardContents  !=null and boardContents  !=''"> , #{boardContents}  </if>
+			<if test="boardViewCount !=null and boardViewCount !=''"> , #{boardViewCount} </if>
+			<if test="fileIdx        !=null and fileIdx        !=''"> , #{fileIdx}        </if>
+			 , #{boardPublicFl}
+			 , NOW()
+			</trim>
+		)
+		<selectKey resultType="String" keyProperty="boardIdx" order="AFTER"><![CDATA[ SELECT LAST_INSERT_ID() ]]></selectKey>
+	</insert>
+	
+	<select id="selectBoard" parameterType="String" resultType="BoardDTO">
+		SELECT A.RN, A.BOARD_IDX, A.BOARD_WRITER, A.BOARD_TITLE, A.BOARD_CONTENTS, A.BOARD_VIEW_COUNT, A.FILE_IDX, A.BOARD_WRITE_DATE, A.BOARD_PUBLIC_FL, A.BOARD_DEL_YN
+          FROM (SELECT @ROWNUM := @ROWNUM + 1 AS RN, BOARD_IDX, BOARD_WRITER, BOARD_TITLE, BOARD_CONTENTS, BOARD_VIEW_COUNT, FILE_IDX, BOARD_WRITE_DATE, BOARD_PUBLIC_FL, BOARD_DEL_YN
+                  FROM (SELECT * 
+                          FROM SAMPLE_BOARD_TB
+                          JOIN (SELECT @ROWNUM := 0) R
+                         ORDER BY BOARD_IDX DESC) AS M
+               ) A
+	     WHERE BOARD_IDX = #{boardIdx}
+	</select>
+	
+	<update id="updateHit" parameterType="String">
+		UPDATE SAMPLE_BOARD_TB
+		   SET BOARD_VIEW_COUNT = BOARD_VIEW_COUNT + 1
+		 WHERE BOARD_IDX = #{boardIdx}
+	</update>
+
+	<!-- UPDATE SAMPLE_BOARD_TB -->
+	<update id="updateBoard" parameterType="BoardDTO">
+		UPDATE SAMPLE_BOARD_TB
+			<trim prefix="SET" prefixOverrides=",">
+			<if test="boardWriter    !=null and boardWriter    !=''"> , BOARD_WRITER     = #{boardWriter}    </if>
+			<if test="boardTitle     !=null and boardTitle     !=''"> , BOARD_TITLE      = #{boardTitle}     </if>
+			<if test="boardContents  !=null and boardContents  !=''"> , BOARD_CONTENTS   = #{boardContents}  </if>
+			<if test="boardViewCount !=null and boardViewCount !=''"> , BOARD_VIEW_COUNT = #{boardViewCount} </if>
+			<if test="fileIdx        !=null and fileIdx        !=''"> , FILE_IDX          = #{fileIdx}       </if>
+			</trim>
+		WHERE BOARD_IDX = #{boardIdx}
+	</update>
+
+
+	<!-- DELETE SAMPLE_BOARD_TB -->
+	<update id="deleteBoard" parameterType="String">
+		UPDATE SAMPLE_BOARD_TB
+		   SET BOARD_DEL_YN = 'Y'
+		 WHERE BOARD_IDX = #{boardIdx}
+	</update>
+	
+	<select id="selectFindCountAll" parameterType="Map" resultType="int">
+		SELECT COUNT(*)
+		  FROM SAMPLE_BOARD_TB
+		 WHERE BOARD_WRITER LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	 	OR BOARD_TITLE LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	    OR BOARD_CONTENTS LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	</select>
+	
+	<select id="selectFindCount" parameterType="Map" resultType="int">
+		SELECT COUNT(*)
+		  FROM SAMPLE_BOARD_TB
+		 WHERE ${column} LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	</select>
+	
+	<select id="selectFindListAll" parameterType="Map" resultType="BoardDTO">
+		SELECT A.RN, A.BOARD_IDX, A.BOARD_WRITER, A.BOARD_TITLE, A.BOARD_CONTENTS, A.BOARD_VIEW_COUNT, A.FILE_IDX, A.BOARD_WRITE_DATE, A.BOARD_PUBLIC_FL, A.BOARD_DEL_YN
+        FROM (SELECT @ROWNUM := @ROWNUM + 1 AS RN, BOARD_IDX, BOARD_WRITER, BOARD_TITLE, BOARD_CONTENTS, BOARD_VIEW_COUNT, FILE_IDX, BOARD_WRITE_DATE, BOARD_PUBLIC_FL, BOARD_DEL_YN
+              FROM (SELECT * 
+                    FROM SAMPLE_BOARD_TB
+                    JOIN (SELECT @ROWNUM := 0) R
+                   ORDER BY BOARD_IDX DESC) AS M
+             WHERE BOARD_WRITER LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	 	OR BOARD_TITLE LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	 	OR BOARD_CONTENTS LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+            ) A
+	   	 WHERE A.RN BETWEEN #{beginRecord} AND #{endRecord}
+
+
+
+	</select>
+	
+	<select id="selectFindList" parameterType="Map" resultType="BoardDTO">
+		SELECT A.RN, A.BOARD_IDX, A.BOARD_WRITER, A.BOARD_TITLE, A.BOARD_CONTENTS, A.BOARD_VIEW_COUNT, A.FILE_IDX, A.BOARD_WRITE_DATE, A.BOARD_PUBLIC_FL, A.BOARD_DEL_YN
+	   	  FROM (SELECT @ROWNUM := @ROWNUM + 1 AS RN, BOARD_IDX, BOARD_WRITER, BOARD_TITLE, BOARD_CONTENTS, BOARD_VIEW_COUNT, FILE_IDX, BOARD_WRITE_DATE, BOARD_PUBLIC_FL, BOARD_DEL_YN
+              FROM (SELECT * 
+                    FROM SAMPLE_BOARD_TB
+                    JOIN (SELECT @ROWNUM := 0) R
+             WHERE ${column} LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+             ORDER BY BOARD_IDX DESC) AS M
+            ) A
+	   	 WHERE A.RN BETWEEN #{beginRecord} AND #{endRecord}
+	   	  
+	</select>
+	
+	<select id="selectBoardByRn" parameterType="int" resultType="BoardDTO">
+		SELECT A.RN, A.BOARD_IDX, A.BOARD_WRITER, A.BOARD_TITLE, A.BOARD_CONTENTS, A.BOARD_VIEW_COUNT, A.FILE_IDX, A.BOARD_WRITE_DATE, A.BOARD_PUBLIC_FL, A.BOARD_DEL_YN
+          FROM (SELECT @ROWNUM := @ROWNUM + 1 AS RN, BOARD_IDX, BOARD_WRITER, BOARD_TITLE, BOARD_CONTENTS, BOARD_VIEW_COUNT, FILE_IDX, BOARD_WRITE_DATE, BOARD_PUBLIC_FL, BOARD_DEL_YN
+                  FROM (SELECT * 
+                          FROM SAMPLE_BOARD_TB
+                          JOIN (SELECT @ROWNUM := 0) R
+                         ORDER BY BOARD_IDX DESC) AS M
+               ) A
+         WHERE A.RN = #{rn}
+	
+	
+	</select>
+
+</mapper>

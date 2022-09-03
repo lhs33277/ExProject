@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="sample">
+
+	<select id="selectMemberList" parameterType="Map" resultType="BoardWriterDTO">
+		SELECT BOARD_WRITER_IDX
+		     , BOARD_WRITER
+		     , BOARD_WRITER_NAME
+		     , BOARD_WRITER_PW
+			 , BOARD_WRITER_PHONE
+			 , BOARD_WRITER_EMAIL
+			 , FILE_IDX
+			 , BOARD_WRITER_JOIN_DATE
+			 , SALT
+			 , DEL_YN
+		  FROM SAMPLE_WRITER_TB
+		 ORDER BY BOARD_WRITER_IDX
+		 LIMIT #{beginRecord}, #{recordPerPage}
+	</select>
+	
+	<update id="deleteMembers" parameterType="String">
+		UPDATE SAMPLE_WRITER_TB
+		   SET DEL_YN = 'Y'
+		 WHERE BOARD_WRITER_IDX = #{boardWriterIdx}
+	</update>
+	
+	<select id="selectFindCountAllManage" parameterType="Map" resultType="int">
+		SELECT COUNT(*)
+		  FROM SAMPLE_WRITER_TB
+		 WHERE BOARD_WRITER LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	 	OR BOARD_WRITER_NAME LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	    OR BOARD_WRITER_PHONE LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	    OR BOARD_WRITER_EMAIL LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	</select>
+	
+	<select id="selectFindCountManage" parameterType="Map" resultType="int">
+		SELECT COUNT(*)
+		  FROM SAMPLE_WRITER_TB
+		 WHERE ${column} LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	</select>
+	
+	<select id="selectFindListAllManage" parameterType="Map" resultType="BoardWriterDTO">
+		SELECT BOARD_WRITER_IDX
+		     , BOARD_WRITER
+		     , BOARD_WRITER_NAME
+		     , BOARD_WRITER_PW
+			 , BOARD_WRITER_PHONE
+			 , BOARD_WRITER_EMAIL
+			 , FILE_IDX
+			 , BOARD_WRITER_JOIN_DATE
+			 , SALT
+			 , DEL_YN
+	   	  FROM SAMPLE_WRITER_TB
+	   	 WHERE BOARD_WRITER LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	 	OR BOARD_WRITER_NAME LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	    OR BOARD_WRITER_PHONE LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	    OR BOARD_WRITER_EMAIL LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	 ORDER BY BOARD_WRITER_IDX
+	   	 LIMIT #{beginRecord}, #{recordPerPage}
+	</select>
+	
+	<select id="selectFindListManage" parameterType="Map" resultType="BoardWriterDTO">
+		SELECT BOARD_WRITER_IDX
+		     , BOARD_WRITER
+		     , BOARD_WRITER_NAME
+		     , BOARD_WRITER_PW
+			 , BOARD_WRITER_PHONE
+			 , BOARD_WRITER_EMAIL
+			 , FILE_IDX
+			 , BOARD_WRITER_JOIN_DATE
+			 , SALT
+			 , DEL_YN
+	   	  FROM SAMPLE_WRITER_TB
+	   	 WHERE ${column} LIKE CONCAT('%', CONCAT(IFNULL(#{query}, ''), '%'))
+	   	 ORDER BY BOARD_WRITER_IDX
+	   	 LIMIT #{beginRecord}, #{recordPerPage}
+	</select>
+
+</mapper>

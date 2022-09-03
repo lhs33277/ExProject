@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="sample">
+
+	<insert id="insertBoardWriter" parameterType="BoardWriterDTO">
+		INSERT INTO SAMPLE_WRITER_TB (
+			<trim prefixOverrides=",">
+			<if test="boardWriterIdx    !=null and boardWriterIdx  !=''">  	, BOARD_WRITER_IDX	   </if>
+			<if test="boardWriter       !=null and boardWriter  !=''"> 		, BOARD_WRITER		   </if>
+			<if test="boardWriterName   !=null and boardWriterName  !=''">  , BOARD_WRITER_NAME	   </if>
+			<if test="boardWriterPw     !=null and boardWriterPw  !=''"> 	, BOARD_WRITER_PW		   </if>
+			<if test="boardWriterPhone  !=null and boardWriterPhone  !=''"> , BOARD_WRITER_PHONE	   </if>
+			<if test="boardWriterEmail  !=null and boardWriterEmail  !=''"> , BOARD_WRITER_EMAIL	   </if>
+			<if test="fileIdx           !=null and fileIdx  !=''"> 			, FILE_IDX			   </if>
+			, BOARD_WRITER_JOIN_DATE
+			, SALT
+			</trim>
+		)
+		VALUES (
+			<trim prefixOverrides=",">
+			<if test="boardWriterIdx    !=null and boardWriterIdx  !=''"> 	, #{boardWriterIdx}	   </if>
+			<if test="boardWriter       !=null and boardWriter  !=''"> 		, #{boardWriter}		   </if>
+			<if test="boardWriterName   !=null and boardWriterName  !=''"> 	, #{boardWriterName}	   </if>
+			<if test="boardWriterPw     !=null and boardWriterPw  !=''"> 	, #{boardWriterPw}	   </if>
+			<if test="boardWriterPhone  !=null and boardWriterPhone  !=''"> , #{boardWriterPhone}	   </if>
+			<if test="boardWriterEmail  !=null and boardWriterEmail  !=''"> , #{boardWriterEmail}	   </if>
+			<if test="fileIdx           !=null and fileIdx  !=''"> 			, #{fileIdx}			   </if>
+			, NOW() 
+			, #{salt}
+			</trim>
+		)
+	</insert>
+	
+	<select id="selectSaltById" parameterType="String" resultType="String">
+		SELECT SALT
+		  FROM SAMPLE_WRITER_TB
+		 WHERE BOARD_WRITER = #{boardWriter}
+	</select>
+
+	
+	<select id="selectBoardWriterByIdPw" parameterType="BoardWriterDTO" resultType="BoardWriterDTO">
+		SELECT BOARD_WRITER_IDX
+		     , BOARD_WRITER
+		     , BOARD_WRITER_NAME
+		     , BOARD_WRITER_PW
+			 , BOARD_WRITER_PHONE
+			 , BOARD_WRITER_EMAIL
+			 , FILE_IDX
+			 , BOARD_WRITER_JOIN_DATE
+			 , SALT
+			 , DEL_YN
+		  FROM SAMPLE_WRITER_TB
+		 WHERE BOARD_WRITER = #{boardWriter}
+		   AND BOARD_WRITER_PW = #{boardWriterPw}
+	</select>
+
+	<select id="selectBoardWriterById" parameterType="String" resultType="BoardWriterDTO">
+		SELECT BOARD_WRITER_IDX
+		     , BOARD_WRITER
+		     , BOARD_WRITER_NAME
+		     , BOARD_WRITER_PW
+			 , BOARD_WRITER_PHONE
+			 , BOARD_WRITER_EMAIL
+			 , FILE_IDX
+			 , BOARD_WRITER_JOIN_DATE
+			 , SALT
+			 , DEL_YN
+		  FROM SAMPLE_WRITER_TB
+		 WHERE BOARD_WRITER = #{boardWriter}
+	</select>
+	
+	<update id="updateFileIdx" parameterType="int">
+		UPDATE SAMPLE_WRITER_TB
+		   SET FILE_IDX = #{fileIdx}
+		 WHERE
+	</update>
+	
+	<select id="selectMemberCount" resultType="int">
+		SELECT COUNT(*) FROM SAMPLE_WRITER_TB
+	</select>
+	
+	<select id="selectTodayMemberCount" resultType="int">
+		SELECT COUNT(*) 
+		  FROM SAMPLE_WRITER_TB
+		 WHERE DATE(BOARD_WRITER_JOIN_DATE) = DATE(NOW());
+	</select>
+
+	<update id="updateMember" parameterType="BoardWriterDTO">
+		UPDATE SAMPLE_WRITER_TB
+		   SET BOARD_WRITER_NAME = #{boardWriterName}
+		     , BOARD_WRITER_PW = #{boardWriterPw}
+			 , BOARD_WRITER_PHONE = #{boardWriterPhone}
+			 , BOARD_WRITER_EMAIL = #{boardWriterEmail}
+			 , FILE_IDX = #{fileIdx}
+			 , SALT = #{salt}
+		 WHERE BOARD_WRITER = #{boardWriter}
+	</update>
+
+	<delete id="deleteMember" parameterType="String">
+		DELETE FROM SAMPLE_WRITER_TB
+		 WHERE BOARD_WRITER = #{boardWriter}
+	</delete>
+
+
+
+</mapper>
